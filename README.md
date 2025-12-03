@@ -1,4 +1,4 @@
-# Streamlit Application
+# Project Akhir Data Science
 
 A base framework for building Streamlit applications.
 
