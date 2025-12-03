@@ -16,6 +16,8 @@ def initialize_session_state():
         
     if 'tabs_settings' not in st.session_state:
         st.session_state['tabs_settings'] = {}
+    if "page" not in st.session_state:
+        st.session_state.page = "Home" # Default page
 
 def initialize_tab_settings(index):
     if f"remove_missing_values_checkbox_{index}" not in st.session_state:
@@ -47,10 +49,20 @@ def initialize_tab_settings(index):
     if f"covariance_type_{index}" not in st.session_state:
         st.session_state[f"covariance_type_{index}"] = "full"
 
+# Radio Sync
+def _update_from_primary():
+    st.session_state.page = st.session_state.nav_primary
+    st.session_state.nav_secondary = None
+
+def _update_from_secondary():
+    st.session_state.page = st.session_state.nav_secondary
+    st.session_state.nav_primary = None
+
 # Initialize session state
 initialize_session_state()
 for i in range(10):
     initialize_tab_settings(i)
+
 
 
 # Page configuration
@@ -83,42 +95,28 @@ with st.sidebar:
         "Settings",
     ]
 
-    if "page" not in st.session_state:
-        st.session_state.page = primary_pages[0]
-    if "page_nav_primary" not in st.session_state:
-        st.session_state.page_nav_primary = primary_pages[0]
-    if "page_nav_secondary" not in st.session_state:
-        st.session_state.page_nav_secondary = secondary_pages[0]
-
-    def _set_page_from_primary():
-        st.session_state.page = st.session_state.page_nav_primary
-
-    def _set_page_from_secondary():
-        st.session_state.page = st.session_state.page_nav_secondary
-
+    # --- PRIMARY RADIO ---
     st.radio(
         "Main Pages",
-        primary_pages,
-        key="page_nav_primary",
-        on_change=_set_page_from_primary,
+        options=primary_pages,
+        key="nav_primary",
+        index=0 if st.session_state.page in primary_pages else None, # Select if active, else None
+        on_change=_update_from_primary
     )
 
     st.divider()
 
+    # --- SECONDARY RADIO ---
     st.radio(
         "Custom Data & Tools",
-        secondary_pages,
-        key="page_nav_secondary",
-        on_change=_set_page_from_secondary,
+        options=secondary_pages,
+        key="nav_secondary",
+        index=0 if st.session_state.page in secondary_pages else None, # Select if active, else None
+        on_change=_update_from_secondary
     )
 
     page = st.session_state.page
-    
-    
-    
     st.toast("Gunakan menu di samping untuk navigasi antar halaman.", icon="ℹ️")
-        
-    
     st.divider()
 
 # Main content area
