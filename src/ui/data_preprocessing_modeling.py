@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import bokeh.models.widgets as bkwidgets
-import streamlit_bokeh as stb
 import src.ml.preprocess_modeling as preprocess_modeling
 
 
