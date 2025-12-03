@@ -1,9 +1,61 @@
 import streamlit as st
 import src.ui.home as uihome
+import src.ui.data_preprocessing_modeling as uipreprocessmodeling
+import pandas as pd
+import numpy as np
+
+
+#Session state initialization
+def initialize_session_state(): 
+    if 'data_preview' not in st.session_state:
+        df = pd.read_csv('data/nutrition.csv')
+        st.session_state['data_preview'] = df
+        
+    if 'slider_num_models' not in st.session_state:
+        st.session_state['slider_num_models'] = 5
+        
+    if 'tabs_settings' not in st.session_state:
+        st.session_state['tabs_settings'] = {}
+
+def initialize_tab_settings(index):
+    if f"remove_missing_values_checkbox_{index}" not in st.session_state:
+        st.session_state[f"remove_missing_values_checkbox_{index}"] = False
+    if f"remove_duplicates_checkbox_{index}" not in st.session_state:
+        st.session_state[f"remove_duplicates_checkbox_{index}"] = False
+    if f"handle_outliers_checkbox_{index}" not in st.session_state:
+        st.session_state[f"handle_outliers_checkbox_{index}"] = False
+    if f"outlier_method_selectbox_{index}" not in st.session_state:
+        st.session_state[f"outlier_method_selectbox_{index}"] = "IQR Method"
+    if f"normalize_checkbox_{index}" not in st.session_state:
+        st.session_state[f"normalize_checkbox_{index}"] = False
+    if f"normalization_selectbox_{index}" not in st.session_state:
+        st.session_state[f"normalization_selectbox_{index}"] = "Min-Max Scaling"
+    if f"modeling_selectbox_{index}" not in st.session_state:
+        st.session_state[f"modeling_selectbox_{index}"] = "K-Means"
+    if f"n_clusters_{index}" not in st.session_state:
+        st.session_state[f"n_clusters_{index}"] = 3
+    if f"random_state_{index}" not in st.session_state:
+        st.session_state[f"random_state_{index}"] = 42
+    if f"linkage_method_{index}" not in st.session_state:
+        st.session_state[f"linkage_method_{index}"] = "ward"
+    if f"eps_{index}" not in st.session_state:
+        st.session_state[f"eps_{index}"] = 0.5
+    if f"min_samples_{index}" not in st.session_state:
+        st.session_state[f"min_samples_{index}"] = 5
+    if f"n_components_{index}" not in st.session_state:
+        st.session_state[f"n_components_{index}"] = 3
+    if f"covariance_type_{index}" not in st.session_state:
+        st.session_state[f"covariance_type_{index}"] = "full"
+
+# Initialize session state
+initialize_session_state()
+for i in range(10):
+    initialize_tab_settings(i)
+
 
 # Page configuration
 st.set_page_config(
-    page_title="My Streamlit App",
+    page_title="Project Akhir Data Science",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -21,48 +73,69 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Title and description
-st.markdown("""<h1 style='font-size: 34px; font-weight: bold;'>Pengelompokan Makanan Khas Indonesia Berbasis Analisis<br>
-            Fakta Makronutrien Terkandung Menggunakan Pendekatan<br>
-            Sains Data</h1>
-            """, unsafe_allow_html=True)
-
 # Sidebar
 with st.sidebar:
     st.header("Navigasi")
-    page = st.radio(
-        "Pilih halaman:",
-        ["Home", "Data Analysis", "Visualization", "Settings"]
+    primary_pages = ["Home", "Our Result"]
+    secondary_pages = [
+        "Data Preprocessing & Modeling",
+        "Result & Visualization",
+        "Settings",
+    ]
+
+    if "page" not in st.session_state:
+        st.session_state.page = primary_pages[0]
+    if "page_nav_primary" not in st.session_state:
+        st.session_state.page_nav_primary = primary_pages[0]
+    if "page_nav_secondary" not in st.session_state:
+        st.session_state.page_nav_secondary = secondary_pages[0]
+
+    def _set_page_from_primary():
+        st.session_state.page = st.session_state.page_nav_primary
+
+    def _set_page_from_secondary():
+        st.session_state.page = st.session_state.page_nav_secondary
+
+    st.radio(
+        "Main Pages",
+        primary_pages,
+        key="page_nav_primary",
+        on_change=_set_page_from_primary,
     )
+
+    st.divider()
+
+    st.radio(
+        "Custom Data & Tools",
+        secondary_pages,
+        key="page_nav_secondary",
+        on_change=_set_page_from_secondary,
+    )
+
+    page = st.session_state.page
+    
+    
     
     st.toast("Gunakan menu di samping untuk navigasi antar halaman.", icon="ℹ️")
         
     
     st.divider()
-    
-    st.header("Filters")
-    filter_option = st.selectbox(
-        "Choose an option:",
-        ["Option 1", "Option 2", "Option 3"]
-    )
 
 # Main content area
 if page == "Home":
     uihome.home()
     pass
 
-elif page == "Data Analysis":
-    st.header("Data Analysis")
-    st.write("Upload and analyze your data here.")
-    
-    uploaded_file = st.file_uploader("Choose a file", type=["csv", "xlsx", "txt"])
-    
-    if uploaded_file is not None:
-        st.success("File uploaded successfully!")
-        # Add your data processing logic here
+elif page == "Our Result":
+    import src.ui.our_results as uiourresults
+    uiourresults.our_results()
 
-elif page == "Visualization":
-    st.header("Data Visualization")
+elif page == "Data Preprocessing & Modeling":
+    uipreprocessmodeling.data_preprocessing_modeling()
+    pass
+
+elif page == "Result & Visualization":
+    st.header("Data Result & Visualization")
     st.write("Create visualizations here.")
     
     # Example: Simple chart placeholder

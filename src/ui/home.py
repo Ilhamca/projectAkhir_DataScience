@@ -5,6 +5,10 @@ def home():
         Penjelasan singkat mengenai latar belakang masalah dari proyek ini.
         Apa Saja Model yang digunakan dalam proyek ini.
     """
+    st.markdown("""<h1 style='font-size: 34px; font-weight: bold;'>Pengelompokan Makanan Khas Indonesia Berbasis Analisis
+            Fakta Makronutrien Terkandung Menggunakan Pendekatan
+            Sains Data</h1>
+            """, unsafe_allow_html=True)
     
     st.html("""Anggota Kelompok:<br>
             1. <br>
@@ -24,3 +28,6 @@ def home():
         itu, kami berinisiatif untuk membuat program memilah makanan berdasarkan 
         kandungan makronutriennya.
     """)
+    
+    if st.button("Bug test"):
+        st.write("tabs_settings:", st.session_state['tabs_settings'])
