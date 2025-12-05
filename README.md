@@ -2,6 +2,10 @@
 
 A base framework for building Streamlit applications.
 
+# Web Host
+
+https://projectakhirdatascience-konpachigoated.streamlit.app/
+
 ## Installation
 
 Install the required packages:
