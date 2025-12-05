@@ -12,6 +12,7 @@ TAB_STATE_DEFAULTS = {
     "normalize": False,
     "normalization_method": "Min-Max Scaling",
     "algorithm": "K-Means",
+    "split_data": 0.8,
     "n_clusters": 3,
     "random_state": 42,
     "linkage_method": "ward",
@@ -202,6 +203,19 @@ def _cleaning_modeling(index):
     # Modeling Section
     st.markdown("### Model Configuration")
     
+    _sync_widget_state(f"modeling_slider_{index}", tab_state, "split_data")
+    tab_state["split_data"] = st.slider(
+        label="Percentage of data split",
+        min_value=0.1,
+        max_value=0.9,
+        value=st.session_state[f"modeling_slider_{index}"],
+        key=f"modeling_slider_{index}",
+        step=0.1
+    )
+    st.write(f"Data split for training: {tab_state['split_data']*100:.0f}%")
+    st.write(f"Data split for testing: {(1 - tab_state['split_data'])*100:.0f}%")
+    
+    
     _sync_widget_state(f"modeling_selectbox_{index}", tab_state, "algorithm")
     tab_state["algorithm"] = st.selectbox(
         "Choose Clustering Algorithm",
@@ -210,6 +224,8 @@ def _cleaning_modeling(index):
         help="Select the clustering algorithm to use",
     )
     algorithm = tab_state["algorithm"]
+    
+    
     
     # Algorithm-specific parameters
     if algorithm == "K-Means":
