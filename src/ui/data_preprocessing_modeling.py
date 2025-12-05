@@ -11,7 +11,7 @@ TAB_STATE_DEFAULTS = {
     "outlier_method": "IQR Method",
     "normalize": False,
     "normalization_method": "Min-Max Scaling",
-    "algorithm": "K-Means",
+    "algorithm": "K-Means (Unsupervised)",
     "split_data": 0.8,
     "n_clusters": 3,
     "random_state": 42,
@@ -20,6 +20,8 @@ TAB_STATE_DEFAULTS = {
     "min_samples": 5,
     "n_components": 3,
     "covariance_type": "full",
+    "n_estimators": 100,
+    "max_depth": 10,
 }
 
 
@@ -63,8 +65,6 @@ def _data_information(data_preview):
 def data_preprocessing_modeling():
     """
     Main function for Data Preprocessing & Modeling page.
-    tab1: Dataset dari data/nutrition.csv
-    tab2: Dataset sendiri yang diupload user
     """
     st.header("Data Preprocessing & Modeling")
     st.write("Preview dari dataset:")
@@ -122,6 +122,8 @@ def data_preprocessing_modeling():
     _cleaning_modeling_debug()
     if st.button("Show Tabs Settings in Session State"):
         st.write("tabs_settings:", st.session_state['tabs_settings'])
+        
+    st.write(tabs_settings[0])
         
 
 def _cleaning_modeling(index):
@@ -218,8 +220,8 @@ def _cleaning_modeling(index):
     
     _sync_widget_state(f"modeling_selectbox_{index}", tab_state, "algorithm")
     tab_state["algorithm"] = st.selectbox(
-        "Choose Clustering Algorithm",
-        ["K-Means", "Hierarchical Clustering", "DBSCAN", "Gaussian Mixture", "Naive Bayes", "Decision Tree"],
+        "Choose Algorithm",
+        ["K-Means (Unsupervised)", "Naive Bayes (Supervised)", "Random Forest (Supervised)",],
         key=f"modeling_selectbox_{index}",
         help="Select the clustering algorithm to use",
     )
@@ -228,7 +230,7 @@ def _cleaning_modeling(index):
     
     
     # Algorithm-specific parameters
-    if algorithm == "K-Means":
+    if algorithm == "K-Means (Unsupervised)":
         col1, col2 = st.columns(2)
         with col1:
             _sync_widget_state(f"n_clusters_{index}", tab_state, "n_clusters")
@@ -249,7 +251,7 @@ def _cleaning_modeling(index):
                 help="Random seed for reproducibility",
             )
     
-    elif algorithm == "Hierarchical Clustering":
+    elif algorithm == "Hierarchical Clustering (Unsupervised)":
         col1, col2 = st.columns(2)
         with col1:
             _sync_widget_state(f"n_clusters_{index}", tab_state, "n_clusters")
@@ -267,6 +269,31 @@ def _cleaning_modeling(index):
                 ["ward", "complete", "average", "single"],
                 key=f"linkage_method_{index}",
                 help="Linkage criterion to use",
+            )
+    
+    elif algorithm == "Naive Bayes (Supervised)":
+        st.info("Naive Bayes does not require additional parameters.")
+        
+    elif algorithm == "Random Forest (Supervised)":
+        col1, col2 = st.columns(2)
+        with col1:
+            _sync_widget_state(f"n_estimators_{index}", tab_state, "n_estimators")
+            tab_state["n_estimators"] = st.number_input(
+                "Number of Estimators",
+                min_value=10,
+                max_value=500,
+                step=10,
+                key=f"n_estimators_{index}",
+                help="Number of trees in the forest",
+            )
+        with col2:
+            _sync_widget_state(f"max_depth_{index}", tab_state, "max_depth")
+            tab_state["max_depth"] = st.number_input(
+                "Max Depth",
+                min_value=1,
+                max_value=50,
+                key=f"max_depth_{index}",
+                help="Maximum depth of the tree",
             )
     
     elif algorithm == "DBSCAN":
@@ -310,18 +337,29 @@ def _cleaning_modeling(index):
                 key=f"covariance_type_{index}",
                 help="Type of covariance parameters",
             )
-    
-    elif algorithm == "Naive Bayes":
-        st.info("Naive Bayes does not require additional parameters.")
-        
-    elif algorithm == "Decision Tree":
-        st.info("Decision Tree does not require additional parameters.")
 
     # Collect and return all settings
     return {
-        "model_index": index,
-        **tab_state,
+        "remove_missing_values": tab_state["remove_missing_values"],
+        "remove_duplicates": tab_state["remove_duplicates"],
+        "handle_outliers": tab_state["handle_outliers"],
+        "outlier_method": tab_state["outlier_method"],
+        "normalize": tab_state["normalize"],
+        "normalization_method": tab_state["normalization_method"],
+        "algorithm": tab_state["algorithm"],
+        "split_data": tab_state["split_data"],
+        "n_clusters": tab_state.get("n_clusters", None),
+        "random_state": tab_state.get("random_state", None),
+        "linkage_method": tab_state.get("linkage_method", None),
+        "eps": tab_state.get("eps", None),
+        "min_samples": tab_state.get("min_samples", None),
+        "n_components": tab_state.get("n_components", None),
+        "covariance_type": tab_state.get("covariance_type", None),
+        "n_estimators": tab_state.get("n_estimators", None),
+        "max_depth": tab_state.get("max_depth", None),
     }
+    
+
 
 def _cleaning_modeling_debug():
     """
