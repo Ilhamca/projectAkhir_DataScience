@@ -15,15 +15,52 @@ TAB_STATE_DEFAULTS = {
     "split_data": 0.8,
     "n_clusters": 3,
     "random_state": 42,
-    "linkage_method": "ward",
-    "eps": 0.5,
-    "min_samples": 5,
-    "n_components": 3,
-    "covariance_type": "full",
     "n_estimators": 100,
     "max_depth": 10,
 }
 
+
+
+def _extract_metric_info(details):
+    if not isinstance(details, dict):
+        return None, None, None
+    if 'accuracy' in details:
+        value = details['accuracy'] * 100
+        return 'Accuracy', value, f"{value:.2f}%"
+    if 'inertia' in details:
+        value = details['inertia']
+        return 'Inertia', value, f"{value:,.2f}"
+    return None, None, None
+
+
+def _build_model_summary(model_results):
+    rows = []
+    for result in model_results:
+        metric, metric_value, metric_display = _extract_metric_info(result.get('details'))
+        rows.append({
+            "Model": f"Model {result.get('model_index', 0) + 1}",
+            "Algorithm": result.get('algorithm', 'Unknown Algorithm'),
+            "Status": result.get('status', 'unknown').capitalize(),
+            "Metric": metric or '\u2014',
+            "MetricValue": metric_value,
+            "MetricDisplay": metric_display or 'N/A',
+            "Message": result.get('message', ''),
+        })
+    return pd.DataFrame(rows)
+
+
+def _render_model_comparison_charts(summary_df):
+    accuracy_df = summary_df[(summary_df['Metric'] == 'Accuracy') & summary_df['MetricValue'].notna()]
+    if not accuracy_df.empty:
+        st.write("Accuracy Comparison (%):")
+        chart_data = accuracy_df.set_index('Model')['MetricValue']
+        st.bar_chart(chart_data)
+
+    inertia_df = summary_df[(summary_df['Metric'] == 'Inertia') & summary_df['MetricValue'].notna()]
+    if not inertia_df.empty:
+        st.write("K-Means Inertia (lower is better):")
+        chart_data = inertia_df.set_index('Model')['MetricValue']
+        st.bar_chart(chart_data)
 
 
 def _update_slider_num_models():
@@ -117,7 +154,32 @@ def data_preprocessing_modeling():
         with st.expander("Current Tabs Settings"):        
             st.dataframe(tabs_settings)
         
-        st.button("Mulai Proses Komparasi Model", on_click=lambda: st.write("Proses Komparasi Model Dimulai..."), type='primary')
+        if st.button("Mulai Proses Komparasi Model", on_click=lambda: st.write("Proses Komparasi Model Dimulai..."), type='primary'):
+            processed_outputs, model_results = preprocess_modeling.preprocess_modeling(
+                st.session_state['data_preview'],
+                tabs_settings
+            )
+            if processed_outputs:
+                st.success("Data Preprocessing and Modeling Completed.")
+                for output in processed_outputs:
+                    model_label = output.get('model_index', 0) + 1
+                    algorithm_name = output.get('algorithm', 'Unknown Algorithm')
+                    st.write(f"Processed Data Preview - Model {model_label} ({algorithm_name})")
+                    st.dataframe(output['data'].head(), use_container_width=True)
+            else:
+                st.info("No processed datasets were returned. Please review your configuration.")
+
+            if model_results:
+                st.subheader("Model Results")
+                summary_df = _build_model_summary(model_results)
+                if not summary_df.empty:
+                    display_df = summary_df[['Model', 'Algorithm', 'Status', 'Metric', 'MetricDisplay', 'Message']]
+                    st.dataframe(display_df, use_container_width=True)
+                    _render_model_comparison_charts(summary_df)
+                else:
+                    st.info("Model execution did not return any measurable metrics.")
+            else:
+                st.info("Model execution did not return any results.")
     
     _cleaning_modeling_debug()
     if st.button("Show Tabs Settings in Session State"):
@@ -205,13 +267,14 @@ def _cleaning_modeling(index):
     # Modeling Section
     st.markdown("### Model Configuration")
     
-    _sync_widget_state(f"modeling_slider_{index}", tab_state, "split_data")
+    slider_key = f"modeling_slider_{index}"
+    _sync_widget_state(slider_key, tab_state, "split_data")
     tab_state["split_data"] = st.slider(
         label="Percentage of data split",
         min_value=0.1,
         max_value=0.9,
-        value=st.session_state[f"modeling_slider_{index}"],
-        key=f"modeling_slider_{index}",
+        value=st.session_state[slider_key],
+        key=slider_key,
         step=0.1
     )
     st.write(f"Data split for training: {tab_state['split_data']*100:.0f}%")
@@ -251,26 +314,6 @@ def _cleaning_modeling(index):
                 help="Random seed for reproducibility",
             )
     
-    elif algorithm == "Hierarchical Clustering (Unsupervised)":
-        col1, col2 = st.columns(2)
-        with col1:
-            _sync_widget_state(f"n_clusters_{index}", tab_state, "n_clusters")
-            tab_state["n_clusters"] = st.number_input(
-                "Number of Clusters",
-                min_value=2,
-                max_value=20,
-                key=f"n_clusters_{index}",
-                help="Number of clusters to form",
-            )
-        with col2:
-            _sync_widget_state(f"linkage_method_{index}", tab_state, "linkage_method")
-            tab_state["linkage_method"] = st.selectbox(
-                "Linkage Method",
-                ["ward", "complete", "average", "single"],
-                key=f"linkage_method_{index}",
-                help="Linkage criterion to use",
-            )
-    
     elif algorithm == "Naive Bayes (Supervised)":
         st.info("Naive Bayes does not require additional parameters.")
         
@@ -295,48 +338,6 @@ def _cleaning_modeling(index):
                 key=f"max_depth_{index}",
                 help="Maximum depth of the tree",
             )
-    
-    elif algorithm == "DBSCAN":
-        col1, col2 = st.columns(2)
-        with col1:
-            _sync_widget_state(f"eps_{index}", tab_state, "eps")
-            tab_state["eps"] = st.number_input(
-                "Epsilon (eps)",
-                min_value=0.1,
-                max_value=10.0,
-                step=0.1,
-                key=f"eps_{index}",
-                help="Maximum distance between two samples",
-            )
-        with col2:
-            _sync_widget_state(f"min_samples_{index}", tab_state, "min_samples")
-            tab_state["min_samples"] = st.number_input(
-                "Min Samples",
-                min_value=1,
-                max_value=50,
-                key=f"min_samples_{index}",
-                help="Minimum number of samples in a neighborhood",
-            )
-    
-    elif algorithm == "Gaussian Mixture":
-        col1, col2 = st.columns(2)
-        with col1:
-            _sync_widget_state(f"n_components_{index}", tab_state, "n_components")
-            tab_state["n_components"] = st.number_input(
-                "Number of Components",
-                min_value=2,
-                max_value=20,
-                key=f"n_components_{index}",
-                help="Number of mixture components",
-            )
-        with col2:
-            _sync_widget_state(f"covariance_type_{index}", tab_state, "covariance_type")
-            tab_state["covariance_type"] = st.selectbox(
-                "Covariance Type",
-                ["full", "tied", "diag", "spherical"],
-                key=f"covariance_type_{index}",
-                help="Type of covariance parameters",
-            )
 
     # Collect and return all settings
     return {
@@ -350,11 +351,6 @@ def _cleaning_modeling(index):
         "split_data": tab_state["split_data"],
         "n_clusters": tab_state.get("n_clusters", None),
         "random_state": tab_state.get("random_state", None),
-        "linkage_method": tab_state.get("linkage_method", None),
-        "eps": tab_state.get("eps", None),
-        "min_samples": tab_state.get("min_samples", None),
-        "n_components": tab_state.get("n_components", None),
-        "covariance_type": tab_state.get("covariance_type", None),
         "n_estimators": tab_state.get("n_estimators", None),
         "max_depth": tab_state.get("max_depth", None),
     }

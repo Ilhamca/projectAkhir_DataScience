@@ -8,7 +8,7 @@ import numpy as np
 #Session state initialization
 def initialize_session_state(): 
     if 'data_preview' not in st.session_state:
-        df = pd.read_csv('data/nutrition.csv')
+        df = pd.read_csv('data/nutrition_labeled.csv')
         st.session_state['data_preview'] = df
         
     if 'slider_num_models' not in st.session_state:
