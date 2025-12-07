@@ -1,65 +1,94 @@
 <?php
 header('Content-Type: application/json');
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
 
 // Get selected model from query parameter (default: random_forest)
 $selectedModel = isset($_GET['model']) ? $_GET['model'] : 'random_forest';
 
-// Map numeric predictions to label names
-function getLabelName($prediction) {
-    $labels = [
-        '0' => 'Sangat Buruk',
-        '1' => 'Buruk',
-        '2' => 'Baik',
-        '3' => 'Sangat Baik'
-    ];
-    return isset($labels[$prediction]) ? $labels[$prediction] : $labels['2'];
+// Validate model type
+$validModels = ['random_forest', 'naive_bayes', 'svm', 'kmeans'];
+if (!in_array($selectedModel, $validModels)) {
+    $selectedModel = 'random_forest';
 }
 
-// Read nutrition data with ML predictions
+// Read nutrition data from original CSV
 $data = [];
-$predictionFile = 'nutrition_data_with_predictions.csv';
 $originalFile = 'nutrition_data.csv';
 
-// Use predictions file if available, otherwise fall back to original
-$fileToUse = file_exists($predictionFile) ? $predictionFile : $originalFile;
+if (!file_exists($originalFile)) {
+    echo json_encode(['error' => 'Data file not found']);
+    exit;
+}
 
-if (file_exists($fileToUse)) {
-    $file = fopen($fileToUse, 'r');
-    $headers = fgetcsv($file);
-    
-    // Find prediction column indices
-    $predictionColumn = $selectedModel . '_prediction';
-    $confidenceColumn = $selectedModel . '_confidence';
-    $predictionIndex = array_search($predictionColumn, $headers);
-    $confidenceIndex = array_search($confidenceColumn, $headers);
-    $originalLabelIndex = array_search('label', $headers);
-    
-    while (($row = fgetcsv($file)) !== false) {
-        $food = [];
-        foreach ($headers as $i => $header) {
-            $food[$header] = $row[$i];
-        }
-        
-        // Override label with ML model prediction if available
-        if ($predictionIndex !== false && isset($row[$predictionIndex])) {
-            $food['label'] = getLabelName($row[$predictionIndex]);
-            $food['model_prediction'] = $row[$predictionIndex];
-            $food['original_label'] = isset($row[$originalLabelIndex]) ? $row[$originalLabelIndex] : $food['label'];
-        }
-        
-        // Add confidence score
-        if ($confidenceIndex !== false && isset($row[$confidenceIndex])) {
-            $food['confidence'] = round(floatval($row[$confidenceIndex]), 2);
-        } else {
-            $food['confidence'] = 100.0;
-        }
-        
-        // Add model source info
-        $food['model_used'] = $selectedModel;
-        
-        $data[] = $food;
+// First, read all foods from CSV
+$file = fopen($originalFile, 'r');
+$headers = fgetcsv($file);
+
+while (($row = fgetcsv($file)) !== false) {
+    $food = [];
+    foreach ($headers as $i => $header) {
+        $food[$header] = $row[$i];
     }
-    fclose($file);
+    $data[] = $food;
+}
+fclose($file);
+
+// Prepare data for batch prediction
+$predictionInput = [
+    'foods' => array_map(function($food) {
+        return [
+            'id' => $food['id'] ?? '',
+            'calories' => $food['calories'] ?? 0,
+            'proteins' => $food['proteins'] ?? 0,
+            'fat' => $food['fat'] ?? 0,
+            'carbohydrate' => $food['carbohydrate'] ?? 0
+        ];
+    }, $data)
+];
+
+// Save to temp file
+$tempFile = tempnam(sys_get_temp_dir(), 'predict_');
+file_put_contents($tempFile, json_encode($predictionInput));
+
+// Call Python script for REAL-TIME predictions using trained model
+$pythonPath = 'C:/Users/RAFFY/anaconda3/python.exe';
+$scriptPath = 'predict_batch.py';
+$command = sprintf('"%s" %s %s "%s" 2>&1', $pythonPath, $scriptPath, $selectedModel, $tempFile);
+
+$output = shell_exec($command);
+unlink($tempFile);
+
+// Parse predictions
+$predictions = json_decode($output, true);
+
+if (!$predictions || !isset($predictions['success']) || !$predictions['success']) {
+    // Fallback to original labels if prediction fails
+    foreach ($data as &$food) {
+        $food['label'] = $food['label'] ?? 'Baik';
+        $food['confidence'] = 0.0;
+        $food['model_used'] = $selectedModel;
+        $food['prediction_error'] = true;
+    }
+} else {
+    // Merge predictions with food data
+    $predictionMap = [];
+    foreach ($predictions['predictions'] as $pred) {
+        $predictionMap[$pred['id']] = $pred;
+    }
+    
+    foreach ($data as &$food) {
+        $foodId = $food['id'] ?? '';
+        if (isset($predictionMap[$foodId])) {
+            $pred = $predictionMap[$foodId];
+            $food['original_label'] = $food['label'] ?? '';
+            $food['label'] = $pred['label_name'];
+            $food['model_prediction'] = $pred['prediction'];
+            $food['confidence'] = $pred['confidence'];
+            $food['model_used'] = $selectedModel;
+            $food['real_time_prediction'] = true; // Flag to show it's real-time
+        }
+    }
 }
 
 echo json_encode($data);

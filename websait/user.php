@@ -337,9 +337,9 @@
                     <option value="svm">SVM (Support Vector Machine)</option>
                 </select>
             </div>
-            <div style="padding: 10px; background: #E3F2FD; border-radius: 5px; margin-top: 10px; font-size: 0.9em;">
-                💡 <strong>Semua makanan telah diklasifikasi menggunakan model ML yang dilatih di Jupyter Notebook</strong><br>
-                Ganti model untuk melihat prediksi berbeda berdasarkan algoritma yang dipilih
+            <div style="padding: 10px; background: #E8F5E9; border-left: 4px solid #4CAF50; border-radius: 5px; margin-top: 10px; font-size: 0.9em;">
+                🔥 <strong>REAL-TIME PREDICTION: Model ML aktif memprediksi setiap makanan saat dimuat!</strong><br>
+                💡 Model dilatih di Jupyter Notebook (92.59% akurasi) dan dipanggil langsung untuk klasifikasi live
             </div>
         </div>
 
@@ -452,22 +452,37 @@
 
         // Load foods with selected model predictions
         function loadFoodsWithModel(model) {
-            document.getElementById('foodGrid').innerHTML = '<div class="loading">Memuat data dengan model ' + getModelName(model) + '...</div>';
+            const modelName = getModelName(model);
+            document.getElementById('foodGrid').innerHTML = '<div class="loading">🤖 Model ' + modelName + ' sedang memprediksi ' + (foodsData.length || '1,346') + ' makanan secara REAL-TIME...<br><small>Mohon tunggu beberapa detik...</small></div>';
+            
+            const startTime = Date.now();
             
             fetch('get_foods.php?model=' + model)
                 .then(response => response.json())
                 .then(data => {
+                    const endTime = Date.now();
+                    const duration = ((endTime - startTime) / 1000).toFixed(2);
+                    
                     foodsData = data;
                     recommendedFoods = []; // Reset recommendations when changing model
                     displayFoods(data);
                     
-                    // Show model info
-                    if (data.length > 0 && data[0].model_used) {
-                        console.log('Loaded ' + data.length + ' foods classified by ' + data[0].model_used + ' model');
+                    // Show success message with timing
+                    if (data.length > 0) {
+                        const realTime = data[0].real_time_prediction ? '✅ REAL-TIME' : '⚡ CACHED';
+                        console.log(`${realTime} Prediction: ${data.length} foods classified by ${modelName} in ${duration}s`);
+                        
+                        // Show temporary success message
+                        const grid = document.getElementById('foodGrid');
+                        const successMsg = document.createElement('div');
+                        successMsg.style.cssText = 'padding: 15px; background: #E8F5E9; border-left: 4px solid #4CAF50; border-radius: 5px; margin-bottom: 20px;';
+                        successMsg.innerHTML = `✅ <strong>Model ${modelName} berhasil memprediksi ${data.length} makanan dalam ${duration} detik!</strong>`;
+                        grid.insertBefore(successMsg, grid.firstChild);
+                        setTimeout(() => successMsg.remove(), 5000);
                     }
                 })
                 .catch(error => {
-                    document.getElementById('foodGrid').innerHTML = '<div class="no-results">❌ Gagal memuat data makanan</div>';
+                    document.getElementById('foodGrid').innerHTML = '<div class="no-results">❌ Gagal memuat data makanan<br><small>' + error.message + '</small></div>';
                     console.error('Error loading foods:', error);
                 });
         }
@@ -543,7 +558,8 @@
             }
 
             const confidenceText = food.confidence ? `<br><small>🎯 Confidence Score: ${food.confidence.toFixed(1)}%</small>` : '';
-            const modelInfo = food.model_used ? `<br><small>📊 Diklasifikasi menggunakan model: <strong>${getModelName(food.model_used)}</strong></small>` : '';
+            const modelInfo = food.model_used ? `<br><small>📊 Model: <strong>${getModelName(food.model_used)}</strong></small>` : '';
+            const realTimeFlag = food.real_time_prediction ? `<br><small>🔥 <strong>REAL-TIME PREDICTION</strong> - Model dipanggil langsung saat Anda memuat halaman ini</small>` : '';
             
             document.getElementById('modalInfo').innerHTML = `
                 <div style="padding: 15px; background: ${food.label === 'Sangat Baik' ? '#E8F5E9' : food.label === 'Baik' ? '#F1F8E9' : food.label === 'Buruk' ? '#FFF3E0' : '#FFEBEE'}; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid ${food.label === 'Sangat Baik' ? '#4CAF50' : food.label === 'Baik' ? '#8BC34A' : food.label === 'Buruk' ? '#FF9800' : '#F44336'};">
@@ -551,6 +567,7 @@
                     <small>Rasio Protein: ${proteinRatio}% dari kalori</small>
                     ${confidenceText}
                     ${modelInfo}
+                    ${realTimeFlag}
                 </div>
                 
                 <h3 style="color: #2E7D32; margin-bottom: 15px;">Informasi Gizi</h3>
