@@ -1,0 +1,15 @@
+# Streamlit Configuration
+# Place this in streamlait/.streamlit/config.toml
+
+[theme]
+primaryColor = "#2E7D32"
+backgroundColor = "#f5f5f5"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#262730"
+font = "sans serif"
+
+[server]
+headless = true
+port = 8501
+enableCORS = false
+enableXsrfProtection = true
