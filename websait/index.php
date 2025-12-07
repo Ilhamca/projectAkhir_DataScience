@@ -9,7 +9,7 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #C62828 0%, #E53935 50%, #FFFFFF 100%);
+            background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 50%, #A5D6A7 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -77,7 +77,7 @@
         .role-card:hover {
             transform: translateY(-15px) scale(1.05);
             box-shadow: 0 25px 60px rgba(0,0,0,0.4);
-            border-color: #C62828;
+            border-color: #2E7D32;
         }
         
         .role-icon {
@@ -87,7 +87,7 @@
         }
         
         .role-card h2 {
-            color: #C62828;
+            color: #2E7D32;
             font-size: 2.2em;
             margin-bottom: 15px;
         }
@@ -116,7 +116,7 @@
         .role-card .btn {
             display: inline-block;
             padding: 15px 50px;
-            background: linear-gradient(135deg, #C62828 0%, #D32F2F 100%);
+            background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
             color: white;
             text-decoration: none;
             border-radius: 50px;
@@ -127,8 +127,8 @@
         }
         
         .role-card .btn:hover {
-            background: linear-gradient(135deg, #B71C1C 0%, #C62828 100%);
-            box-shadow: 0 8px 20px rgba(198, 40, 40, 0.4);
+            background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%);
+            box-shadow: 0 8px 20px rgba(46, 125, 50, 0.4);
             transform: translateY(-2px);
         }
         
@@ -145,24 +145,24 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🇮🇩 Sistem Analisis Gizi Makanan Indonesia</h1>
-            <p>Platform Lengkap untuk Analisis dan Manajemen Data Nutrisi</p>
+            <h1>🥗 Sistem Rekomendasi Makanan Sehat</h1>
+            <p>Platform Cerdas untuk Analisis Nutrisi & Rekomendasi Makanan Berkualitas</p>
         </div>
         
         <div class="role-selection">
             <div class="role-card" onclick="location.href='user.php'">
-                <span class="role-icon">👤</span>
-                <h2>Pengguna</h2>
-                <p>Cari dan analisis kandungan gizi makanan Indonesia</p>
+                <span class="role-icon">🥗</span>
+                <h2>Dapatkan Rekomendasi</h2>
+                <p>Sistem AI akan merekomendasikan makanan terbaik untuk Anda</p>
                 <div class="features">
                     <ul>
-                        <li>✓ Cari makanan dari database lengkap</li>
-                        <li>✓ Lihat informasi nutrisi detail</li>
-                        <li>✓ Analisis dengan berbagai model ML</li>
-                        <li>✓ Interface mudah dan intuitif</li>
+                        <li>✓ Rekomendasi personal berdasarkan target kalori</li>
+                        <li>✓ Filter berdasarkan protein & kualitas nutrisi</li>
+                        <li>✓ Analisis dengan Random Forest ML model</li>
+                        <li>✓ Lihat detail lengkap setiap makanan</li>
                     </ul>
                 </div>
-                <a href="user.php" class="btn">Masuk sebagai Pengguna</a>
+                <a href="user.php" class="btn">🎯 Dapatkan Rekomendasi</a>
             </div>
             
             <div class="role-card" onclick="location.href='admin.php'">

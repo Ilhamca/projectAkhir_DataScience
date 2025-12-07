@@ -1,0 +1,10 @@
+{
+  "total_foods": 1346,
+  "models_used": [
+    "random_forest",
+    "naive_bayes",
+    "svm",
+    "kmeans"
+  ],
+  "classification_timestamp": "2025-12-07T20:55:18.528292"
+}

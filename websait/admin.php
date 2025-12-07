@@ -13,7 +13,7 @@
         }
         
         .navbar {
-            background: linear-gradient(135deg, #C62828 0%, #D32F2F 100%);
+            background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%);
             color: white;
             padding: 20px 40px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -47,8 +47,8 @@
             color: #666;
         }
         
-        .tab.active { background: #C62828; color: white; }
-        .tab:hover { background: #E53935; color: white; }
+        .tab.active { background: #2E7D32; color: white; }
+        .tab:hover { background: #388E3C; color: white; }
         
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -62,17 +62,17 @@
         }
         
         .panel h2 {
-            color: #C62828;
+            color: #2E7D32;
             margin-bottom: 20px;
             font-size: 1.8em;
-            border-bottom: 3px solid #C62828;
+            border-bottom: 3px solid #2E7D32;
             padding-bottom: 10px;
         }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px; }
         
         .stat-card {
-            background: linear-gradient(135deg, #C62828 0%, #D32F2F 100%);
+            background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
             color: white;
             padding: 25px;
             border-radius: 10px;
@@ -96,7 +96,7 @@
         }
         
         th {
-            background: #C62828;
+            background: #2E7D32;
             color: white;
             padding: 12px;
             text-align: left;
@@ -133,12 +133,12 @@
         
         .form-group input:focus, .form-group select:focus {
             outline: none;
-            border-color: #C62828;
+            border-color: #2E7D32;
         }
         
         .btn {
             padding: 12px 30px;
-            background: linear-gradient(135deg, #C62828 0%, #D32F2F 100%);
+            background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
             color: white;
             border: none;
             border-radius: 8px;
@@ -150,7 +150,7 @@
         }
         
         .btn:hover {
-            background: linear-gradient(135deg, #B71C1C 0%, #C62828 100%);
+            background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%);
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
@@ -212,12 +212,12 @@
         }
         
         .model-card:hover {
-            border-color: #C62828;
-            box-shadow: 0 4px 12px rgba(198, 40, 40, 0.2);
+            border-color: #2E7D32;
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2);
         }
         
         .model-card h3 {
-            color: #C62828;
+            color: #2E7D32;
             margin-bottom: 15px;
         }
         
@@ -254,7 +254,7 @@
         
         .progress-fill {
             height: 100%;
-            background: linear-gradient(135deg, #C62828 0%, #D32F2F 100%);
+            background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
             transition: width 0.3s;
             display: flex;
             align-items: center;

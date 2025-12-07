@@ -9,7 +9,7 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #C62828 0%, #E53935 50%, #FFFFFF 100%);
+            background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 50%, #A5D6A7 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -20,7 +20,7 @@
             text-align: center;
             color: white;
             margin-bottom: 30px;
-            background: linear-gradient(135deg, #B71C1C 0%, #D32F2F 100%);
+            background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%);
             padding: 30px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
@@ -58,13 +58,13 @@
         .search-input {
             width: 100%;
             padding: 15px;
-            border: 3px solid #D32F2F;
+            border: 3px solid #388E3C;
             border-radius: 10px;
             font-size: 1.1em;
             margin-bottom: 15px;
         }
         
-        .search-input:focus { outline: none; border-color: #B71C1C; box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1); }
+        .search-input:focus { outline: none; border-color: #1B5E20; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1); }
         
         .model-selector {
             display: flex;
@@ -75,14 +75,14 @@
         
         .model-selector label {
             font-weight: 600;
-            color: #C62828;
+            color: #2E7D32;
             min-width: 150px;
         }
         
         .model-selector select {
             flex: 1;
             padding: 12px;
-            border: 2px solid #D32F2F;
+            border: 2px solid #388E3C;
             border-radius: 8px;
             font-size: 1em;
             background: white;
@@ -108,8 +108,8 @@
         
         .food-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
-            border-color: #D32F2F;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+            border-color: #388E3C;
         }
         
         .food-image {
@@ -122,9 +122,9 @@
         .food-info { padding: 15px; }
         
         .food-name {
-            font-size: 1.3em;
+            font-size: 1.2em;
             font-weight: bold;
-            color: #C62828;
+            color: #2E7D32;
             margin-bottom: 10px;
         }
         
@@ -170,7 +170,7 @@
         }
         
         .modal-header {
-            background: linear-gradient(135deg, #C62828 0%, #D32F2F 100%);
+            background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%);
             color: white;
             padding: 25px;
             position: relative;
@@ -208,14 +208,14 @@
             background: #f5f5f5;
             padding: 15px;
             border-radius: 10px;
-            border-left: 4px solid #D32F2F;
+            border-left: 4px solid #388E3C;
         }
         
         .nutrition-label { font-size: 0.9em; color: #666; margin-bottom: 5px; }
-        .nutrition-value { font-size: 1.3em; font-weight: bold; color: #C62828; }
+        .nutrition-value { font-size: 1.3em; font-weight: bold; color: #2E7D32; }
         
         .btn-analyze {
-            background: linear-gradient(135deg, #C62828 0%, #D32F2F 100%);
+            background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
             color: white;
             padding: 15px 40px;
             border: none;
@@ -230,7 +230,7 @@
         
         .btn-analyze:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(198, 40, 40, 0.4);
+            box-shadow: 0 8px 20px rgba(46, 125, 50, 0.4);
         }
         
         .result-box {
@@ -244,6 +244,36 @@
         .loading { text-align: center; padding: 40px; color: #666; }
         .no-results { text-align: center; padding: 40px; color: #999; font-size: 1.2em; }
         
+        /* Color-coded quality badges for food recommendations */
+        .quality-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        
+        .quality-sangat-baik {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .quality-baik {
+            background: #8BC34A;
+            color: white;
+        }
+        
+        .quality-buruk {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .quality-sangat-buruk {
+            background: #F44336;
+            color: white;
+        }
+        
         @media (max-width: 768px) {
             .food-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
             .nutrition-grid { grid-template-columns: 1fr; }
@@ -256,22 +286,60 @@
     <div class="container">
         <header>
             <a href="index.php" class="back-btn">← Kembali</a>
-            <h1>🇮🇩 Analisis Gizi Makanan Indonesia</h1>
-            <p>Cari dan analisis kandungan gizi makanan tradisional Indonesia</p>
+            <h1>🥗 Sistem Rekomendasi Makanan Sehat</h1>
+            <p>Dapatkan rekomendasi makanan personal berdasarkan kebutuhan nutrisi Anda</p>
         </header>
 
         <div class="search-section">
+            <h3 style="color: #2E7D32; margin-bottom: 15px;">🎯 Pilih Tujuan Diet Anda</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                <button onclick="setDietGoal('weight-loss')" style="padding: 12px; background: white; border: 2px solid #388E3C; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s;">🏃 Turun Berat</button>
+                <button onclick="setDietGoal('muscle-gain')" style="padding: 12px; background: white; border: 2px solid #388E3C; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s;">💪 Nambah Otot</button>
+                <button onclick="setDietGoal('healthy')" style="padding: 12px; background: white; border: 2px solid #388E3C; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s;">🥗 Sehat Seimbang</button>
+                <button onclick="setDietGoal('low-calorie')" style="padding: 12px; background: white; border: 2px solid #388E3C; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.3s;">🔥 Rendah Kalori</button>
+            </div>
+
+            <h4 style="color: #2E7D32; margin: 20px 0 10px 0;">📊 Kriteria Detail (atau gunakan preset di atas)</h4>
+            <div class="criteria-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Target Kalori (max):</label>
+                    <input type="number" id="maxCalories" value="300" min="0" style="width: 100%; padding: 10px; border: 2px solid #388E3C; border-radius: 5px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Protein Minimum (g):</label>
+                    <input type="number" id="minProtein" value="10" min="0" style="width: 100%; padding: 10px; border: 2px solid #388E3C; border-radius: 5px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Kualitas Minimum:</label>
+                    <select id="minQuality" style="width: 100%; padding: 10px; border: 2px solid #388E3C; border-radius: 5px;">
+                        <option value="Sangat Baik">Hanya Sangat Baik</option>
+                        <option value="Baik" selected>Baik atau Lebih</option>
+                        <option value="Buruk">Buruk atau Lebih</option>
+                        <option value="Sangat Buruk">Semua Makanan</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="getRecommendations()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; border: none; border-radius: 10px; font-size: 1.1em; font-weight: bold; cursor: pointer; margin-bottom: 15px;">🔍 Dapatkan Rekomendasi</button>
+            <div id="recommendationSummary" style="display: none; padding: 15px; background: #E8F5E9; border-left: 4px solid #4CAF50; border-radius: 5px; margin-bottom: 15px;"></div>
+        </div>
+
+        <div class="search-section">
+            <h3 style="color: #2E7D32; margin-bottom: 10px;">🔎 Cari Makanan Spesifik (Opsional)</h3>
             <input type="text" id="searchInput" class="search-input" 
-                   placeholder="Cari makanan... (contoh: soto, rendang, ayam)" autocomplete="off">
+                   placeholder="Cari dari hasil rekomendasi... (contoh: ayam, tahu, tempe)" autocomplete="off">
             
             <div class="model-selector">
-                <label for="modelSelect">Pilih Model Analisis:</label>
+                <label for="modelSelect">🤖 Pilih Model Machine Learning:</label>
                 <select id="modelSelect">
-                    <option value="random_forest">Random Forest (Rekomendasi)</option>
+                    <option value="random_forest">Random Forest (92.59% Akurasi) ⭐</option>
                     <option value="naive_bayes">Naive Bayes</option>
                     <option value="kmeans">K-Means Clustering</option>
                     <option value="svm">SVM (Support Vector Machine)</option>
                 </select>
+            </div>
+            <div style="padding: 10px; background: #E3F2FD; border-radius: 5px; margin-top: 10px; font-size: 0.9em;">
+                💡 <strong>Semua makanan telah diklasifikasi menggunakan model ML yang dilatih di Jupyter Notebook</strong><br>
+                Ganti model untuk melihat prediksi berbeda berdasarkan algoritma yang dipilih
             </div>
         </div>
 
@@ -295,26 +363,130 @@
 
     <script>
         let foodsData = [];
+        let recommendedFoods = [];
         let selectedModel = 'random_forest';
 
-        fetch('get_foods.php')
-            .then(response => response.json())
-            .then(data => {
-                foodsData = data;
-                displayFoods(data);
-            })
-            .catch(error => {
-                document.getElementById('foodGrid').innerHTML = '<div class="no-results">Gagal memuat data makanan</div>';
+        // Quality ranking for filtering
+        const qualityRank = {
+            'Sangat Baik': 4,
+            'Baik': 3,
+            'Buruk': 2,
+            'Sangat Buruk': 1
+        };
+
+        // Diet goal presets based on common nutrition recommendations
+        function setDietGoal(goal) {
+            switch(goal) {
+                case 'weight-loss':
+                    document.getElementById('maxCalories').value = 200;
+                    document.getElementById('minProtein').value = 15;
+                    document.getElementById('minQuality').value = 'Baik';
+                    break;
+                case 'muscle-gain':
+                    document.getElementById('maxCalories').value = 400;
+                    document.getElementById('minProtein').value = 25;
+                    document.getElementById('minQuality').value = 'Baik';
+                    break;
+                case 'healthy':
+                    document.getElementById('maxCalories').value = 300;
+                    document.getElementById('minProtein').value = 10;
+                    document.getElementById('minQuality').value = 'Sangat Baik';
+                    break;
+                case 'low-calorie':
+                    document.getElementById('maxCalories').value = 150;
+                    document.getElementById('minProtein').value = 5;
+                    document.getElementById('minQuality').value = 'Baik';
+                    break;
+            }
+            getRecommendations();
+        }
+
+        function getRecommendations() {
+            const maxCalories = parseFloat(document.getElementById('maxCalories').value);
+            const minProtein = parseFloat(document.getElementById('minProtein').value);
+            const minQuality = document.getElementById('minQuality').value;
+            const minQualityRank = qualityRank[minQuality];
+
+            // Filter foods based on criteria
+            recommendedFoods = foodsData.filter(food => {
+                const calories = parseFloat(food.calories);
+                const protein = parseFloat(food.proteins);
+                const foodQualityRank = qualityRank[food.label] || 0;
+
+                return calories <= maxCalories && 
+                       protein >= minProtein && 
+                       foodQualityRank >= minQualityRank;
             });
+
+            // Sort by quality (best first), then by protein (highest first)
+            recommendedFoods.sort((a, b) => {
+                const qualityDiff = qualityRank[b.label] - qualityRank[a.label];
+                if (qualityDiff !== 0) return qualityDiff;
+                return parseFloat(b.proteins) - parseFloat(a.proteins);
+            });
+
+            // Display summary
+            const summary = document.getElementById('recommendationSummary');
+            if (recommendedFoods.length > 0) {
+                const avgCalories = (recommendedFoods.reduce((sum, f) => sum + parseFloat(f.calories), 0) / recommendedFoods.length).toFixed(1);
+                const avgProtein = (recommendedFoods.reduce((sum, f) => sum + parseFloat(f.proteins), 0) / recommendedFoods.length).toFixed(1);
+                const sangatBaik = recommendedFoods.filter(f => f.label === 'Sangat Baik').length;
+                const baik = recommendedFoods.filter(f => f.label === 'Baik').length;
+                
+                summary.innerHTML = `
+                    <strong>✅ Ditemukan ${recommendedFoods.length} makanan yang sesuai!</strong><br>
+                    📊 Rata-rata: ${avgCalories} kcal, ${avgProtein}g protein<br>
+                    🌟 Kualitas: ${sangatBaik} Sangat Baik, ${baik} Baik
+                `;
+                summary.style.display = 'block';
+            } else {
+                summary.innerHTML = '<strong>❌ Tidak ada makanan yang memenuhi kriteria.</strong><br>Coba sesuaikan kriteria Anda.';
+                summary.style.background = '#FFEBEE';
+                summary.style.borderColor = '#F44336';
+                summary.style.display = 'block';
+            }
+
+            // Display recommended foods
+            displayFoods(recommendedFoods);
+        }
+
+        // Load foods with selected model predictions
+        function loadFoodsWithModel(model) {
+            document.getElementById('foodGrid').innerHTML = '<div class="loading">Memuat data dengan model ' + getModelName(model) + '...</div>';
+            
+            fetch('get_foods.php?model=' + model)
+                .then(response => response.json())
+                .then(data => {
+                    foodsData = data;
+                    recommendedFoods = []; // Reset recommendations when changing model
+                    displayFoods(data);
+                    
+                    // Show model info
+                    if (data.length > 0 && data[0].model_used) {
+                        console.log('Loaded ' + data.length + ' foods classified by ' + data[0].model_used + ' model');
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('foodGrid').innerHTML = '<div class="no-results">❌ Gagal memuat data makanan</div>';
+                    console.error('Error loading foods:', error);
+                });
+        }
+
+        // Initial load with default model
+        loadFoodsWithModel(selectedModel);
 
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
-            const filtered = foodsData.filter(food => food.name.toLowerCase().includes(searchTerm));
+            // Search from recommended foods if available, otherwise all foods
+            const searchPool = recommendedFoods.length > 0 ? recommendedFoods : foodsData;
+            const filtered = searchPool.filter(food => food.name.toLowerCase().includes(searchTerm));
             displayFoods(filtered);
         });
 
         document.getElementById('modelSelect').addEventListener('change', function(e) {
             selectedModel = e.target.value;
+            // Reload data with new model
+            loadFoodsWithModel(selectedModel);
         });
 
         function displayFoods(foods) {
@@ -334,6 +506,7 @@
                         <div class="food-nutrition"><strong>Protein:</strong> ${parseFloat(food.proteins).toFixed(1)}g | <strong>Lemak:</strong> ${parseFloat(food.fat).toFixed(1)}g</div>
                         <div class="food-nutrition"><strong>Karbohidrat:</strong> ${parseFloat(food.carbohydrate).toFixed(1)}g</div>
                         <span class="food-label ${getLabelClass(food.label)}">${food.label}</span>
+                        ${food.confidence ? `<div style="font-size: 0.85em; color: #666; margin-top: 5px;">🤖 AI: ${food.confidence.toFixed(1)}% yakin</div>` : ''}
                     </div>
                 </div>
             `).join('');
@@ -344,6 +517,11 @@
             return map[label] || 'label-buruk';
         }
 
+        function getQualityClass(label) {
+            const map = {'Sangat Baik': 'quality-sangat-baik', 'Baik': 'quality-baik', 'Buruk': 'quality-buruk', 'Sangat Buruk': 'quality-sangat-buruk'};
+            return map[label] || 'quality-buruk';
+        }
+
         function showFoodDetail(foodId) {
             const food = foodsData.find(f => f.id == foodId);
             if (!food) return;
@@ -351,17 +529,41 @@
             document.getElementById('modalTitle').textContent = food.name;
             document.getElementById('modalImage').src = food.image;
             
+            // Generate recommendation reason
+            const proteinRatio = (parseFloat(food.proteins) / (parseFloat(food.calories) + 0.001) * 100).toFixed(1);
+            let reason = '';
+            if (food.label === 'Sangat Baik') {
+                reason = '🌟 Makanan ini memiliki profil nutrisi sangat baik dengan keseimbangan kalori dan makronutrien yang optimal.';
+            } else if (food.label === 'Baik') {
+                reason = '✅ Makanan ini cocok untuk diet sehat dengan nutrisi yang cukup seimbang.';
+            } else if (food.label === 'Buruk') {
+                reason = '⚠️ Konsumsi dalam porsi terbatas. Pertimbangkan alternatif yang lebih sehat.';
+            } else {
+                reason = '❌ Tidak direkomendasikan untuk konsumsi rutin. Cari alternatif yang lebih baik.';
+            }
+
+            const confidenceText = food.confidence ? `<br><small>🎯 Confidence Score: ${food.confidence.toFixed(1)}%</small>` : '';
+            const modelInfo = food.model_used ? `<br><small>📊 Diklasifikasi menggunakan model: <strong>${getModelName(food.model_used)}</strong></small>` : '';
+            
             document.getElementById('modalInfo').innerHTML = `
-                <h3 style="color: #C62828; margin-bottom: 15px;">Informasi Gizi</h3>
+                <div style="padding: 15px; background: ${food.label === 'Sangat Baik' ? '#E8F5E9' : food.label === 'Baik' ? '#F1F8E9' : food.label === 'Buruk' ? '#FFF3E0' : '#FFEBEE'}; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid ${food.label === 'Sangat Baik' ? '#4CAF50' : food.label === 'Baik' ? '#8BC34A' : food.label === 'Buruk' ? '#FF9800' : '#F44336'};">
+                    <strong>🤖 Prediksi Model ML:</strong> ${reason}<br>
+                    <small>Rasio Protein: ${proteinRatio}% dari kalori</small>
+                    ${confidenceText}
+                    ${modelInfo}
+                </div>
+                
+                <h3 style="color: #2E7D32; margin-bottom: 15px;">Informasi Gizi</h3>
                 <div class="nutrition-grid">
                     <div class="nutrition-item"><div class="nutrition-label">Kalori</div><div class="nutrition-value">${parseFloat(food.calories).toFixed(1)} kcal</div></div>
                     <div class="nutrition-item"><div class="nutrition-label">Protein</div><div class="nutrition-value">${parseFloat(food.proteins).toFixed(1)} g</div></div>
                     <div class="nutrition-item"><div class="nutrition-label">Lemak</div><div class="nutrition-value">${parseFloat(food.fat).toFixed(1)} g</div></div>
                     <div class="nutrition-item"><div class="nutrition-label">Karbohidrat</div><div class="nutrition-value">${parseFloat(food.carbohydrate).toFixed(1)} g</div></div>
-                    <div class="nutrition-item"><div class="nutrition-label">Klasifikasi Gizi</div><div class="nutrition-value"><span class="food-label ${getLabelClass(food.label)}">${food.label}</span></div></div>
-                    <div class="nutrition-item"><div class="nutrition-label">Model Saat Ini</div><div class="nutrition-value" style="font-size: 1em;">${getModelName(selectedModel)}</div></div>
+                    <div class="nutrition-item"><div class="nutrition-label">Prediksi AI</div><div class="nutrition-value"><span class="quality-badge ${getQualityClass(food.label)}">${food.label}</span></div></div>
+                    <div class="nutrition-item"><div class="nutrition-label">Model Aktif</div><div class="nutrition-value" style="font-size: 1em;">${getModelName(selectedModel)}</div></div>
                 </div>
-                <button class="btn-analyze" onclick="analyzeFood(${food.id})">Analisis dengan ${getModelName(selectedModel)}</button>
+                ${food.original_label && food.original_label !== food.label ? `<div style="padding: 10px; background: #FFF9C4; border-radius: 5px; margin: 15px 0; font-size: 0.9em;">ℹ️ Label dataset asli: <strong>${food.original_label}</strong> → Model memprediksi: <strong>${food.label}</strong></div>` : ''}
+                <button class="btn-analyze" onclick="analyzeFood(${food.id})">🔍 Bandingkan dengan Model Lain</button>
                 <div id="analysisResult" class="result-box"></div>
             `;
 
