@@ -369,15 +369,19 @@ def main():
         # Add predictions to dataframe
         df['label'] = [p['label_name'] for p in predictions]
         df['confidence'] = [p['confidence'] for p in predictions]
+        quality_counts = df['label'].value_counts().to_dict()
+        quality_summary = " | ".join([
+            f"{label}: {count}" for label, count in quality_counts.items()
+        ]) if quality_counts else "Tidak ada prediksi"
         
         # Filter by criteria
         min_quality_rank = QUALITY_RANK[min_quality]
-        
-        filtered_df = df[
+        criteria_mask = (
             (df['calories'] <= max_calories) &
             (df['proteins'] >= min_protein) &
             (df['label'].map(QUALITY_RANK) >= min_quality_rank)
-        ].copy()
+        )
+        filtered_df = df[criteria_mask].copy()
         
         # Apply search filter
         if st.session_state.get('search_query', ''):
@@ -425,6 +429,41 @@ def main():
             
             Coba sesuaikan kriteria Anda.
             """)
+            # Explain why no rows matched so users know it's not a UI bug
+            calorie_pool = df[df['calories'] <= max_calories]
+            protein_pool = calorie_pool[calorie_pool['proteins'] >= min_protein]
+            diagnostics = []
+            if calorie_pool.empty:
+                diagnostics.append(
+                    f"Tidak ada makanan dengan kalori ≤ {max_calories} kcal."
+                )
+            elif protein_pool.empty:
+                diagnostics.append(
+                    f"{len(calorie_pool)} makanan lolos batas kalori, tetapi semuanya memiliki protein < {min_protein} g."
+                )
+            else:
+                diagnostics.append(
+                    f"{len(protein_pool)} makanan memenuhi batas kalori dan protein."
+                )
+                quality_pool = protein_pool[
+                    protein_pool['label'].map(QUALITY_RANK) >= min_quality_rank
+                ]
+                diagnostics.append(
+                    f"Model hanya memprediksi {quality_counts.get(min_quality, 0)} makanan dengan kualitas {min_quality}."
+                )
+                if quality_pool.empty and not protein_pool.empty:
+                    best_quality_candidate = protein_pool.assign(
+                        quality_rank=protein_pool['label'].map(QUALITY_RANK)
+                    ).sort_values('quality_rank', ascending=False)
+                    if not best_quality_candidate.empty:
+                        best_quality = best_quality_candidate.iloc[0]['label']
+                        diagnostics.append(
+                            f"Kualitas terbaik yang tersedia untuk batas kalori/protein ini adalah {best_quality}."
+                        )
+            if quality_summary:
+                diagnostics.append(f"Distribusi kualitas saat ini → {quality_summary}")
+            for msg in diagnostics:
+                st.info(msg)
 
 if __name__ == "__main__":
     main()

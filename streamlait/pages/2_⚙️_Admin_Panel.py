@@ -77,6 +77,28 @@ def load_data():
         st.error(f"Error loading data: {str(e)}")
         return None
 
+def boost_high_quality_samples(df, target_label='Sangat Baik', min_ratio=0.25):
+    """Oversample target_label rows to ensure it reaches a minimum ratio"""
+    if 'label' not in df.columns:
+        return df, {'before': {}, 'after': {}, 'target_label': target_label, 'boost_factor': 1}
+    label_counts = df['label'].value_counts().to_dict()
+    target_count = label_counts.get(target_label, 0)
+    majority_count = max(label_counts.values()) if label_counts else 0
+    desired_count = max(int(np.ceil(majority_count * min_ratio)), target_count)
+    if target_count == 0 or desired_count <= target_count:
+        return df, {'before': label_counts, 'after': label_counts, 'target_label': target_label, 'boost_factor': 1}
+    repeat_factor = int(np.ceil(desired_count / target_count))
+    target_df = df[df['label'] == target_label]
+    boosted_df = pd.concat([df] + [target_df] * (repeat_factor - 1), ignore_index=True)
+    boosted_df = boosted_df.sample(frac=1.0, random_state=42).reset_index(drop=True)
+    boosted_counts = boosted_df['label'].value_counts().to_dict()
+    return boosted_df, {
+        'before': label_counts,
+        'after': boosted_counts,
+        'target_label': target_label,
+        'boost_factor': repeat_factor
+    }
+
 def get_data_stats(df):
     """Calculate data statistics"""
     numeric_df = df.select_dtypes(include=[np.number])
@@ -181,8 +203,9 @@ def train_model(df, model_type, test_size=0.2):
         st.error("Dataset tidak memiliki kolom 'label'. Pastikan data sudah dilabeli.")
         return None
     
-    X = df[feature_cols].values
-    y = df['label'].values
+    df_balanced, balance_info = boost_high_quality_samples(df)
+    X = df_balanced[feature_cols].values
+    y = df_balanced['label'].values
     
     # Convert string labels to numeric if needed
     if y.dtype == 'object':
@@ -240,7 +263,8 @@ def train_model(df, model_type, test_size=0.2):
         'precision': precision,
         'recall': recall,
         'f1_score': f1,
-        'confusion_matrix': confusion_matrix(y_test, y_pred)
+        'confusion_matrix': confusion_matrix(y_test, y_pred),
+        'balance_info': balance_info
     }
     
     return results
@@ -428,6 +452,10 @@ def main():
                     ax.set_title('Confusion Matrix')
                     st.pyplot(fig)
                     plt.close()
+                    balance_info = results.get('balance_info', {})
+                    if balance_info:
+                        st.caption("Distribusi label setelah strategi balancing kelas:")
+                        st.json(balance_info)
     
     # Tab 3: Data Visualization
     with tab3:
