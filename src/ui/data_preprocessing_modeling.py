@@ -21,46 +21,88 @@ TAB_STATE_DEFAULTS = {
 
 
 
-def _extract_metric_info(details):
-    if not isinstance(details, dict):
-        return None, None, None
-    if 'accuracy' in details:
-        value = details['accuracy'] * 100
-        return 'Accuracy', value, f"{value:.2f}%"
-    if 'inertia' in details:
-        value = details['inertia']
-        return 'Inertia', value, f"{value:,.2f}"
-    return None, None, None
-
-
 def _build_model_summary(model_results):
     rows = []
     for result in model_results:
-        metric, metric_value, metric_display = _extract_metric_info(result.get('details'))
+        details = result.get('details') or {}
         rows.append({
             "Model": f"Model {result.get('model_index', 0) + 1}",
             "Algorithm": result.get('algorithm', 'Unknown Algorithm'),
             "Status": result.get('status', 'unknown').capitalize(),
-            "Metric": metric or '\u2014',
-            "MetricValue": metric_value,
-            "MetricDisplay": metric_display or 'N/A',
+            "Accuracy (%)": details.get('accuracy', None) * 100 if details.get('accuracy') is not None else None,
+            "Precision (%)": details.get('precision', None) * 100 if details.get('precision') is not None else None,
+            "Recall (%)": details.get('recall', None) * 100 if details.get('recall') is not None else None,
+            "F1 (%)": details.get('f1', None) * 100 if details.get('f1') is not None else None,
+            "ROC AUC": details.get('roc_auc'),
+            "RMSE": details.get('rmse'),
+            "Inertia": details.get('inertia'),
+            "Silhouette": details.get('silhouette'),
             "Message": result.get('message', ''),
         })
     return pd.DataFrame(rows)
 
 
 def _render_model_comparison_charts(summary_df):
-    accuracy_df = summary_df[(summary_df['Metric'] == 'Accuracy') & summary_df['MetricValue'].notna()]
-    if not accuracy_df.empty:
-        st.write("Accuracy Comparison (%):")
-        chart_data = accuracy_df.set_index('Model')['MetricValue']
-        st.bar_chart(chart_data)
+    if 'Accuracy (%)' in summary_df.columns:
+        accuracy_df = summary_df[['Model', 'Accuracy (%)']].dropna()
+        if not accuracy_df.empty:
+            st.write("Perbandingan Akurasi (%):")
+            st.bar_chart(accuracy_df.set_index('Model'))
 
-    inertia_df = summary_df[(summary_df['Metric'] == 'Inertia') & summary_df['MetricValue'].notna()]
-    if not inertia_df.empty:
-        st.write("K-Means Inertia (lower is better):")
-        chart_data = inertia_df.set_index('Model')['MetricValue']
-        st.bar_chart(chart_data)
+    score_cols = ['Precision (%)', 'Recall (%)', 'F1 (%)']
+    available_scores = [col for col in score_cols if col in summary_df.columns]
+    if available_scores:
+        multi_df = summary_df[['Model'] + available_scores].dropna(how='all', subset=available_scores)
+        if not multi_df.empty:
+            st.write("Perbandingan Precision/Recall/F1 (%):")
+            st.line_chart(multi_df.set_index('Model'))
+
+    if 'Inertia' in summary_df.columns:
+        inertia_df = summary_df[['Model', 'Inertia']].dropna()
+        if not inertia_df.empty:
+            st.write("Perbandingan Inertia K-Means (lebih rendah lebih baik):")
+            st.bar_chart(inertia_df.set_index('Model'))
+
+
+def _highlight_top_models(summary_df):
+    if 'Accuracy (%)' in summary_df.columns and summary_df['Accuracy (%)'].notna().any():
+        top_idx = summary_df['Accuracy (%)'].idxmax()
+        top_row = summary_df.loc[top_idx]
+        st.success(
+            f"Model terbaik berdasarkan akurasi: {top_row['Model']} ({top_row['Algorithm']}) dengan {top_row['Accuracy (%)']:.2f}%"
+        )
+
+
+def _render_model_detail(result):
+    model_label = result.get('model_index', 0) + 1
+    algorithm_name = result.get('algorithm', 'Unknown Algorithm')
+    status = result.get('status', 'unknown').capitalize()
+    with st.expander(f"Detail Model {model_label} - {algorithm_name} ({status})", expanded=False):
+        narrative = result.get('narrative')
+        if narrative:
+            st.markdown(f"**Ringkasan Proses:** {narrative}")
+
+        steps = result.get('preprocessing_steps', [])
+        if steps:
+            st.write("Langkah pra-pemrosesan:")
+            st.markdown("\n".join([f"- {step}" for step in steps]))
+
+        details = result.get('details') or {}
+        detail_table = {
+            k: v for k, v in details.items()
+            if k not in {'classification_report'} and not isinstance(v, dict)
+        }
+        if detail_table:
+            metrics_df = pd.DataFrame([detail_table])
+            st.dataframe(metrics_df, use_container_width=True)
+
+        if 'classification_report' in details:
+            st.write("Classification Report:")
+            st.text(details['classification_report'])
+
+        for fig_info in result.get('figures', []):
+            st.write(fig_info.get('title', 'Visualisasi'))
+            st.pyplot(fig_info['figure'])
 
 
 def _update_slider_num_models():
@@ -173,11 +215,15 @@ def data_preprocessing_modeling():
                 st.subheader("Model Results")
                 summary_df = _build_model_summary(model_results)
                 if not summary_df.empty:
-                    display_df = summary_df[['Model', 'Algorithm', 'Status', 'Metric', 'MetricDisplay', 'Message']]
-                    st.dataframe(display_df, use_container_width=True)
+                    st.dataframe(summary_df, use_container_width=True)
+                    _highlight_top_models(summary_df)
                     _render_model_comparison_charts(summary_df)
                 else:
                     st.info("Model execution did not return any measurable metrics.")
+
+                st.markdown("### Detail Tiap Model")
+                for result in model_results:
+                    _render_model_detail(result)
             else:
                 st.info("Model execution did not return any results.")
     
